@@ -1,0 +1,110 @@
+//.env
+/*DATABASE_HOST='localhost'
+DATABASE_PORT='3306'
+DATABASE_NAME='database'
+DATABASE_USER='root'
+DATABASE_PASS = 'root'*/
+
+//database->db.ts
+/*import { Sequelize } from "sequelize";
+
+export const db = new Sequelize(
+    process.env.DATABASE_NAME,
+    process.env.DATABASE_USER,
+    process.env.DATABASE_PASS, {
+    dialect: "mysql",
+    host: process.env.DATABASE_HOST,
+    port: process.env.DATABASE_PORT || 3306,
+}
+);*/
+//usermodel.ts
+import { db } from '../db';
+import { DataTypes } from 'sequelize';
+
+export const UserModel = db.define("user", {
+    id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        allowNull: false,
+        primaryKey: true,
+    },
+    email: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    none: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    idade: {
+        type: DataTypes.INTEGER,
+    },
+    
+});
+//routes
+/*
+import express from 'express';
+import UserController from "./controllers/UserController";
+
+const router = express.Router();
+
+//c
+router.post("/users", UserController.create);
+//r
+router.get("/users", UserController.findAll);
+//r
+router.get("/users/:userID",  UserController.findOne);
+//u
+router.put("/users/:userID",  UserController.update);
+//d
+router.delete("users/:userID",  UserController.destroy);
+export { router };
+    */
+    
+//userController
+
+class UserController{
+    async findAll(req, res) {
+        const users = await UserModel.findAll();
+        return users.length > 0 ? res.status(200).json(users) : res.status(204).send();
+        
+    }
+    async findOne(req, res) {
+        const { userId } = req.params;
+        const user = await UserModel.findOne({
+            where: {
+                id: userId,
+            },
+        });
+
+        return user ? res.status(200).json(user) : res.status(204).send();
+    }
+    async create(req, res) {
+        const { email, none, idade } = req.body;
+        const user = await UserModel.create({
+            email,
+            none,
+            idade
+        });
+        return res.status(201).json(user);
+        
+    }
+    async update(req, res) {
+     //const { email, none, idade } = req.body;
+        const { userId } = req.params;
+
+        await UserModel.update(req.body, { where: { id: userId } });
+        return res.status(204).send();
+        
+    }
+    async destroy(req, res) {
+        const { userId } = req.params;
+        await UserModel.destroy({ where: { id: userId } });
+        return res.status(204).send();
+        
+    }
+
+}
+export default new UserController();
+
+
